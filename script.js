@@ -121,6 +121,11 @@ function loadDynamicImages() {
             url: "https://kimi-web-img.moonshot.cn/img/bluewaterchemical.com/ea58a8ed7ae5c7835491a2b7dc73e411c4d7eec3.jpg", 
             title: "Condomínio Ville de France", 
             category: "Tratamento químico especializado • Jacarepaguá" 
+        },
+        { 
+            url: "https://kimi-web-img.moonshot.cn/img/kimberleypoolcare.com.au/df1cac929e46b632b432059e08e0843622d73ece.jpg", 
+            title: "Manutenção Profissional", 
+            category: "Equipe técnica em ação • Limpeza profunda" 
         }
     ];
 
@@ -131,10 +136,11 @@ function loadDynamicImages() {
     portfolioGrid.innerHTML = ''; // Limpa para evitar duplicatas
 
     savedImages.forEach(imgData => {
+        const isVideo = imgData.url.includes('video/mp4') || imgData.url.endsWith('.mp4') || imgData.url.startsWith('data:video/mp4');
         const item = document.createElement('div');
         item.className = 'portfolio-item fade-in';
         item.innerHTML = `
-            <img src="${imgData.url}" alt="${imgData.title}">
+            ${isVideo ? `<video src="${imgData.url}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>` : `<img src="${imgData.url}" alt="${imgData.title}">`}
             <div class="portfolio-overlay">
                 <h3>${imgData.title}</h3>
                 <p>${imgData.category}</p>

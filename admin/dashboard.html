@@ -58,6 +58,32 @@
         .sidebar nav a:hover { background: rgba(255,255,255,0.1); }
         .sidebar nav a.active { background: var(--azul-principal); }
 
+        .sidebar-footer {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            right: 2rem;
+        }
+
+        .btn-sair-sidebar {
+            width: 100%;
+            padding: 12px;
+            background: var(--vermelho);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .btn-sair-sidebar:hover { opacity: 0.9; }
+
         /* Main Content */
         .main-content {
             margin-left: 250px;
@@ -129,7 +155,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
-        .image-item img {
+        .image-item img, .image-item video {
             width: 100%;
             height: 150px;
             object-fit: cover;
@@ -165,9 +191,15 @@
         <h2>PATRICK SILVA PISCINAS</h2>
         <nav>
             <ul>
-                <li><a href="#" class="active">Gerenciar Imagens</a></li>
+                <li><a href="#" class="active">Gerenciar Portfólio</a></li>
             </ul>
         </nav>
+        <div class="sidebar-footer">
+            <button class="btn-sair-sidebar" onclick="logout()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Sair
+            </button>
+        </div>
     </div>
 
     <div class="main-content">
@@ -177,15 +209,17 @@
         </div>
 
         <div class="card">
-            <h3>Adicionar Nova Imagem ao Portfólio</h3>
-            <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">Insira a URL da imagem e um título descritivo.</p>
+            <h3>Adicionar Nova Mídia ao Portfólio</h3>
+            <p style="margin-bottom: 1.5rem; color: #666; font-size: 0.9rem;">Você pode inserir uma URL externa ou fazer o upload de um arquivo (Imagem ou MP4).</p>
             
-            <form id="imageForm" class="form-add-image">
-                <input type="text" id="imgUrl" placeholder="URL da Imagem (ex: https://...)" required>
-                <input type="text" id="imgTitle" placeholder="Título da Imagem" required>
-                <input type="text" id="imgCategory" placeholder="Categoria (ex: Residencial)" required>
-                <button type="submit" class="btn-add">Adicionar</button>
+            <form id="imageForm" class="form-add-image" style="grid-template-columns: 1.5fr 1fr 1fr 1fr auto;">
+                <input type="text" id="imgUrl" placeholder="URL ou Upload Automático">
+                <input type="file" id="fileInput" accept="image/*,video/mp4" style="font-size: 0.7rem; padding: 0.5rem;">
+                <input type="text" id="imgTitle" placeholder="Título" required>
+                <input type="text" id="imgCategory" placeholder="Legenda/Local" required>
+                <button type="submit" class="btn-add" style="padding: 0 1.5rem;">Adicionar</button>
             </form>
+            <small id="uploadStatus" style="display: block; margin-top: -1rem; margin-bottom: 1rem; color: var(--azul-principal);"></small>
 
             <hr>
 
@@ -203,7 +237,7 @@
 
         function logout() {
             localStorage.removeItem('ps_admin_logged');
-            window.location.href = 'login.html';
+            window.location.href = '../index.html';
         }
 
         // Gerenciamento de Imagens
@@ -226,6 +260,16 @@
                 url: "https://kimi-web-img.moonshot.cn/img/bluewaterchemical.com/ea58a8ed7ae5c7835491a2b7dc73e411c4d7eec3.jpg", 
                 title: "Condomínio Ville de France", 
                 category: "Tratamento químico especializado • Jacarepaguá" 
+            },
+            { 
+                url: "https://kimi-web-img.moonshot.cn/img/kimberleypoolcare.com.au/df1cac929e46b632b432059e08e0843622d73ece.jpg", 
+                title: "Manutenção Profissional", 
+                category: "Equipe técnica em ação • Limpeza profunda" 
+            },
+            { 
+                url: "https://kimi-web-img.moonshot.cn/img/precisionpoolcare.com/3910c265492d3f663675a89665c3632e8b09b531.jpg", 
+                title: "Higienização Premium", 
+                category: "Tratamento de bordas e skimmer • Centro" 
             }
         ];
 
@@ -241,13 +285,14 @@
             imageGrid.innerHTML = '';
             
             images.forEach((img, index) => {
+                const isVideo = img.url.includes('video/mp4') || img.url.endsWith('.mp4') || img.url.startsWith('data:video/mp4');
                 const div = document.createElement('div');
                 div.className = 'image-item';
                 div.innerHTML = `
-                    <img src="${img.url}" alt="${img.title}">
+                    ${isVideo ? `<video src="${img.url}" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>` : `<img src="${img.url}" alt="${img.title}">`}
                     <div class="actions">
                         <div>
-                            <p style="margin:0;">${img.title}</p>
+                            <p style="margin:0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;">${img.title}</p>
                             <small style="color:#666;">${img.category}</small>
                         </div>
                         <button class="btn-delete" onclick="deleteImage(${index})">Remover</button>
@@ -257,11 +302,31 @@
             });
         }
 
-        imageForm.addEventListener('submit', function(e) {
+        imageForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            const url = document.getElementById('imgUrl').value;
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('uploadStatus');
+            let url = document.getElementById('imgUrl').value;
             const title = document.getElementById('imgTitle').value;
             const category = document.getElementById('imgCategory').value;
+
+            // Se houver arquivo selecionado, prioriza o upload
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 2 * 1024 * 1024) { // 2MB limit for localStorage safety
+                    alert('Arquivo muito grande! Para arquivos maiores que 2MB, use uma URL externa ou reduza o tamanho.');
+                    return;
+                }
+                
+                status.innerText = 'Convertendo arquivo...';
+                url = await fileToBase64(file);
+                status.innerText = '';
+            }
+
+            if (!url) {
+                alert('Por favor, insira uma URL ou selecione um arquivo.');
+                return;
+            }
 
             const images = JSON.parse(localStorage.getItem('ps_piscinas_images')) || [];
             images.push({ url, title, category });
@@ -270,6 +335,15 @@
             imageForm.reset();
             loadImages();
         });
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
 
         function deleteImage(index) {
             if (confirm('Deseja realmente remover esta imagem?')) {

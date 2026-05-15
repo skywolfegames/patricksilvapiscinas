@@ -273,8 +273,8 @@ nav .container {
 
 .floating-badge {
     position: absolute;
-    bottom: -20px;
-    left: -20px;
+    bottom: -110px;
+    left: -40px;
     background: var(--branco);
     padding: 1.5rem;
     border-radius: 15px;
@@ -1042,14 +1042,6 @@ footer {
     .footer-grid {
         grid-template-columns: 1fr;
     }
-
-    .btn-orcamento-fixed {
-        display: block;
-    }
-
-    .floating-buttons {
-        bottom: 80px;
-    }
 }
 
 /* Loading */
@@ -1108,4 +1100,77 @@ footer {
     background: var(--azul-escuro);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 102, 204, 0.3);
+}
+/* Fixed Footer Bar */
+.footer-fixed-bar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 15px;
+    border-radius: 100px;
+    z-index: 2000;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.footer-btn-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.footer-btn-circle:hover {
+    transform: translateY(-3px) scale(1.1);
+}
+
+.footer-btn-circle.whatsapp { background: #25d366; }
+.footer-btn-circle.instagram { background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); }
+
+.footer-btn-circle svg { width: 22px; height: 22px; }
+
+.footer-btn-main {
+    padding: 0 20px;
+    height: 40px;
+    background: var(--azul-principal);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border-radius: 50px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.footer-btn-main:hover {
+    background: var(--azul-escuro);
+    transform: translateY(-2px);
+}
+
+/* Ocultar barra antiga em favor da nova */
+.btn-orcamento-fixed, .floating-buttons { display: none !important; }
+
+@media (max-width: 640px) {
+    .footer-fixed-bar {
+        bottom: 15px;
+        width: 90%;
+        max-width: 400px;
+    }
 }
