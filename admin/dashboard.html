@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Patrick Silva Piscinas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --azul-principal: #0066cc;
+            --azul-escuro: #004a99;
+            --branco: #ffffff;
+            --cinza-claro: #f8fafc;
+            --preto: #1a202c;
+            --verde: #48bb78;
+            --vermelho: #f56565;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: var(--cinza-claro);
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: var(--preto);
+            color: white;
+            height: 100vh;
+            padding: 2rem;
+            position: fixed;
+        }
+
+        .sidebar h2 {
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 3rem;
+            font-size: 1.2rem;
+            color: var(--azul-agua);
+        }
+
+        .sidebar nav ul { list-style: none; }
+        .sidebar nav li { margin-bottom: 1rem; }
+        .sidebar nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .sidebar nav a:hover { background: rgba(255,255,255,0.1); }
+        .sidebar nav a.active { background: var(--azul-principal); }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 3rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 { font-family: 'Montserrat', sans-serif; }
+
+        .btn-logout {
+            padding: 0.5rem 1.5rem;
+            background: var(--vermelho);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Image Manager */
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .form-add-image {
+            display: grid;
+            grid-template-columns: 2fr 2fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-add-image input {
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .btn-add {
+            background: var(--verde);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .image-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .image-item .actions {
+            padding: 10px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .image-item .actions p {
+            font-size: 0.8rem;
+            color: var(--preto);
+            font-weight: 600;
+        }
+
+        .btn-delete {
+            background: var(--vermelho);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>PATRICK SILVA PISCINAS</h2>
+        <nav>
+            <ul>
+                <li><a href="#" class="active">Gerenciar Imagens</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Gerenciador de Imagens</h1>
+            <button class="btn-logout" onclick="logout()">Sair</button>
+        </div>
+
+        <div class="card">
+            <h3>Adicionar Nova Imagem ao Portfólio</h3>
+            <p style="margin-bottom: 1rem; color: #666; font-size: 0.9rem;">Insira a URL da imagem e um título descritivo.</p>
+            
+            <form id="imageForm" class="form-add-image">
+                <input type="text" id="imgUrl" placeholder="URL da Imagem (ex: https://...)" required>
+                <input type="text" id="imgTitle" placeholder="Título da Imagem" required>
+                <input type="text" id="imgCategory" placeholder="Categoria (ex: Residencial)" required>
+                <button type="submit" class="btn-add">Adicionar</button>
+            </form>
+
+            <hr>
+
+            <div class="image-grid" id="imageGrid">
+                <!-- Imagens serão carregadas aqui -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificação de Login
+        if (localStorage.getItem('ps_admin_logged') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('ps_admin_logged');
+            window.location.href = 'login.html';
+        }
+
+        // Gerenciamento de Imagens
+        const imageForm = document.getElementById('imageForm');
+        const imageGrid = document.getElementById('imageGrid');
+        
+        // Imagens Padrão do Site (para detecção inicial)
+        const defaultImages = [
+            { 
+                url: "https://kimi-web-img.moonshot.cn/img/bluewaterpoolswi.com/248b50d622275296679e33cda90555fdaa1627ac.jpg", 
+                title: "Condomínio Solar das Palmeiras", 
+                category: "Manutenção semanal completa • Barra da Tijuca" 
+            },
+            { 
+                url: "https://kimi-web-img.moonshot.cn/img/aquapremierpools.com/ed59c92f87a6ad0acac1b776470fd44163b0e563.jpeg", 
+                title: "Residencial Parque Azul", 
+                category: "Guarda-vidas diário • Recreio dos Bandeirantes" 
+            },
+            { 
+                url: "https://kimi-web-img.moonshot.cn/img/bluewaterchemical.com/ea58a8ed7ae5c7835491a2b7dc73e411c4d7eec3.jpg", 
+                title: "Condomínio Ville de France", 
+                category: "Tratamento químico especializado • Jacarepaguá" 
+            }
+        ];
+
+        function loadImages() {
+            let images = JSON.parse(localStorage.getItem('ps_piscinas_images'));
+            
+            // Se estiver vazio, detecta/importa as imagens padrão
+            if (!images || images.length === 0) {
+                images = defaultImages;
+                localStorage.setItem('ps_piscinas_images', JSON.stringify(images));
+            }
+
+            imageGrid.innerHTML = '';
+            
+            images.forEach((img, index) => {
+                const div = document.createElement('div');
+                div.className = 'image-item';
+                div.innerHTML = `
+                    <img src="${img.url}" alt="${img.title}">
+                    <div class="actions">
+                        <div>
+                            <p style="margin:0;">${img.title}</p>
+                            <small style="color:#666;">${img.category}</small>
+                        </div>
+                        <button class="btn-delete" onclick="deleteImage(${index})">Remover</button>
+                    </div>
+                `;
+                imageGrid.appendChild(div);
+            });
+        }
+
+        imageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const url = document.getElementById('imgUrl').value;
+            const title = document.getElementById('imgTitle').value;
+            const category = document.getElementById('imgCategory').value;
+
+            const images = JSON.parse(localStorage.getItem('ps_piscinas_images')) || [];
+            images.push({ url, title, category });
+            localStorage.setItem('ps_piscinas_images', JSON.stringify(images));
+
+            imageForm.reset();
+            loadImages();
+        });
+
+        function deleteImage(index) {
+            if (confirm('Deseja realmente remover esta imagem?')) {
+                const images = JSON.parse(localStorage.getItem('ps_piscinas_images')) || [];
+                images.splice(index, 1);
+                localStorage.setItem('ps_piscinas_images', JSON.stringify(images));
+                loadImages();
+            }
+        }
+
+        loadImages();
+    </script>
+</body>
+</html>
